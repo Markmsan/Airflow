@@ -1,0 +1,44 @@
+[2024-07-08T10:10:42.908+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-07-08T10:10:42.930+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: master_branch.DAG_6_branch manual__2024-07-08T10:10:39.737575+00:00 [queued]>
+[2024-07-08T10:10:42.935+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: master_branch.DAG_6_branch manual__2024-07-08T10:10:39.737575+00:00 [queued]>
+[2024-07-08T10:10:42.936+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2024-07-08T10:10:42.947+0000] {taskinstance.py:2330} INFO - Executing <Task(BranchPythonOperator): DAG_6_branch> on 2024-07-08 10:10:39.737575+00:00
+[2024-07-08T10:10:42.959+0000] {warnings.py:112} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61: DeprecationWarning: This process (pid=1721) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  pid = os.fork()
+
+[2024-07-08T10:10:42.960+0000] {standard_task_runner.py:63} INFO - Started process 1723 to run task
+[2024-07-08T10:10:42.960+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'master_branch', 'DAG_6_branch', 'manual__2024-07-08T10:10:39.737575+00:00', '--job-id', '57', '--raw', '--subdir', 'DAGS_FOLDER/master_bracnh.py', '--cfg-path', '/tmp/tmp9obsmdqb']
+[2024-07-08T10:10:42.962+0000] {standard_task_runner.py:91} INFO - Job 57: Subtask DAG_6_branch
+[2024-07-08T10:10:42.997+0000] {task_command.py:426} INFO - Running <TaskInstance: master_branch.DAG_6_branch manual__2024-07-08T10:10:39.737575+00:00 [running]> on host 0ffcb94bda06
+[2024-07-08T10:10:43.060+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='master_branch' AIRFLOW_CTX_TASK_ID='DAG_6_branch' AIRFLOW_CTX_EXECUTION_DATE='2024-07-08T10:10:39.737575+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-07-08T10:10:39.737575+00:00'
+[2024-07-08T10:10:43.062+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-07-08T10:10:43.062+0000] {baseoperator.py:400} WARNING - BranchPythonOperator.execute cannot be called outside TaskInstance!
+[2024-07-08T10:10:43.071+0000] {logging_mixin.py:188} INFO - The DAG DAG_6 was triggered 1 times today.
+[2024-07-08T10:10:43.072+0000] {python.py:237} INFO - Done. Returned value was: ['already_triggeredDAG_6']
+[2024-07-08T10:10:43.072+0000] {branch.py:36} INFO - Branch into ['already_triggeredDAG_6']
+[2024-07-08T10:10:43.073+0000] {skipmixin.py:178} INFO - Following branch ['already_triggeredDAG_6']
+[2024-07-08T10:10:43.073+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2024-07-08T10:10:43.081+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 401, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 269, in execute
+    return self.do_branch(context, super().execute(context))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/branch.py", line 37, in do_branch
+    self.skip_all_except(context["ti"], branches_to_execute)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/skipmixin.py", line 215, in skip_all_except
+    raise AirflowException(
+airflow.exceptions.AirflowException: 'branch_task_ids' must contain only valid task_ids. Invalid tasks found: {'already_triggeredDAG_6'}.
+[2024-07-08T10:10:43.090+0000] {taskinstance.py:1206} INFO - Marking task as UP_FOR_RETRY. dag_id=master_branch, task_id=DAG_6_branch, run_id=manual__2024-07-08T10:10:39.737575+00:00, execution_date=20240708T101039, start_date=20240708T101042, end_date=20240708T101043
+[2024-07-08T10:10:43.101+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 57 for task DAG_6_branch ('branch_task_ids' must contain only valid task_ids. Invalid tasks found: {'already_triggeredDAG_6'}.; 1723)
+[2024-07-08T10:10:43.134+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 1
+[2024-07-08T10:10:43.157+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-07-08T10:10:43.159+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
