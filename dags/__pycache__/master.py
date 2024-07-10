@@ -49,8 +49,12 @@ def schedule_dags():
     dags_to_trigger = max_dag_count - runnin_dag_count
     
     dags_ids_to_trigger = [dag['name'] for dag in sorted_dag[:dags_to_trigger]]
+
+    dag_enabled_not_trigger = [dag['name'] for dag in sorted_dag[dags_to_trigger:]]
     dags_ids_not_to_trigger = [dag['name'] for dag in disabled_sorted]
-    return dags_ids_to_trigger, dags_ids_not_to_trigger
+
+    no_trigger = dags_ids_not_to_trigger + dag_enabled_not_trigger
+    return dags_ids_to_trigger, no_trigger
 
 def branch_operator(dag_id, condition):
     c = get_task_trigger_count(dag_id)
@@ -62,6 +66,9 @@ def branch_operator(dag_id, condition):
         else:
             return [f'trigger_{dag_id}']
 
+def print_id(a,b):
+    print(f'Dags to trigger{a}\n')
+    print(f'Dags no to trigger{b}\n')
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -72,21 +79,23 @@ default_args = {
 
 # Define the DAG
 with DAG(
-    dag_id='master_branch',
+    dag_id='DAG_master_branch',
     default_args=default_args,
     schedule_interval=None,  # Set to None to disable scheduling; adjust as needed
     catchup=False,
 ) as dag:
 
-    # Define the start dummy operator
-    start = DummyOperator(
-        task_id='start'
+    trigger_dag_id, no_trigger_dag_id = schedule_dags()
+    # Define the start Python operator
+    start = PythonOperator(
+        task_id='start',
+        python_callable=print_id,
+        op_args=[trigger_dag_id,no_trigger_dag_id]
     )
      # Define the end dummy operator
     end = DummyOperator(
         task_id='end'
     )
-    trigger_dag_id, no_trigger_dag_id = schedule_dags()
 
   
     for dag_id in trigger_dag_id:
@@ -94,7 +103,7 @@ with DAG(
         branching  = BranchPythonOperator(
             task_id=f'{dag_id}_branch',
             python_callable=branch_operator,
-            op_args=[dag_id, 'True']
+            op_args=[dag_id, True]
         )
         already_triggered = DummyOperator(
             task_id=f'already_triggered_{dag_id}'
@@ -120,7 +129,7 @@ with DAG(
         branching  = BranchPythonOperator(
             task_id=f'{dag_id}_branch',
             python_callable=branch_operator,
-            op_args=[dag_id, 'False']
+            op_args=[dag_id, False]
         )
         already_triggered = DummyOperator(
             task_id=f'already_triggered_{dag_id}'
