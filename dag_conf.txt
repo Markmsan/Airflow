@@ -2,6 +2,7 @@
     {
         "name": "DAG_1",
         "enabled": true,
+        "triggered": false,
         "priority": 1
     },
     {
