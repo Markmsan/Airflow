@@ -39,26 +39,27 @@ def get_runnning_dag_count(session=None):
     return session.query(DagRun).filter(DagRun.state == State.RUNNING).count()
 
 def schedule_dags():
-    enabled_dags = [dag for dag in dags_config if dag['enabled']]
-    disabled_dag = [dag for dag in dags_config if not dag['enabled']]
 
-    sorted_dag = sorted(enabled_dags, key=lambda d: d['priority'])
-    disabled_sorted = sorted(disabled_dag, key=lambda d: d['priority'])
+    to_trigger = []
+    to_skip = []
     
     runnin_dag_count = get_runnning_dag_count()
-    dags_to_trigger = max_dag_count - runnin_dag_count
-    
-    dags_ids_to_trigger = [dag['name'] for dag in sorted_dag[:dags_to_trigger]]
+    dags_to_trigger = max_dag_count-runnin_dag_count
+    to_skip += [dag['name'] for dag in dags_config if not dag['enabled']]
 
-    dag_enabled_not_trigger = [dag['name'] for dag in sorted_dag[dags_to_trigger:]]
-    dags_ids_not_to_trigger = [dag['name'] for dag in disabled_sorted]
+    enabled_dags = [dag for dag in dags_config if dag['enabled']]
+    sorted_dag = sorted(enabled_dags, key=lambda d: d['priority'],reverse=True)
 
-    no_trigger = dags_ids_not_to_trigger + dag_enabled_not_trigger
-    return dags_ids_to_trigger, no_trigger
+    for dag in sorted_dag:
+        if len(to_trigger) == dags_to_trigger or get_task_trigger_count(dag["name"]) == 1:
+            to_skip.append(dag['name'])
+        else:
+            to_trigger.append(dag["name"])
+
+    return to_trigger, to_skip
 
 def branch_operator(dag_id, condition):
-    c = get_task_trigger_count(dag_id)
-    if c == 1:
+    if get_task_trigger_count(dag_id) == 1:
         return [f'already_triggered_{dag_id}']
     else:
         if condition == False:
@@ -67,8 +68,12 @@ def branch_operator(dag_id, condition):
             return [f'trigger_{dag_id}']
 
 def print_id(a,b):
+    runnin_dag_count = get_runnning_dag_count()
+    dags_to_trigger = max_dag_count-runnin_dag_count
+    print(f'Number of Dags that will be tirggered:{dags_to_trigger}\n')
     print(f'Dags to trigger{a}\n')
     print(f'Dags no to trigger{b}\n')
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -105,13 +110,16 @@ with DAG(
             python_callable=branch_operator,
             op_args=[dag_id, True]
         )
-        already_triggered = DummyOperator(
-            task_id=f'already_triggered_{dag_id}'
-        )
+        # Define the Trigger operator
         trigger = TriggerDagRunOperator(
             task_id=f'trigger_{dag_id}',
             trigger_dag_id=dag_id,
             wait_for_completion=False,
+        )
+
+        # Define the Dummy operators
+        already_triggered = DummyOperator(
+            task_id=f'already_triggered_{dag_id}'
         )
         skip=DummyOperator(
             task_id=f'skip_{dag_id}'
@@ -131,13 +139,16 @@ with DAG(
             python_callable=branch_operator,
             op_args=[dag_id, False]
         )
-        already_triggered = DummyOperator(
-            task_id=f'already_triggered_{dag_id}'
-        )
+        # Define the Trigger operator
         trigger = TriggerDagRunOperator(
             task_id=f'trigger_{dag_id}',
             trigger_dag_id=dag_id,
             wait_for_completion=False,
+        )
+
+        # Define the Dummy operators
+        already_triggered = DummyOperator(
+            task_id=f'already_triggered_{dag_id}'
         )
         skip=DummyOperator(
             task_id=f'skip_{dag_id}'
