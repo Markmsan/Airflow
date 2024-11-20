@@ -15,7 +15,7 @@ default_args = {
 
 # Define the DAG, its parameters, and schedule
 dag = DAG(
-    'git_dag',
+    'git_daga',
     default_args=default_args,
     description='A simple example DAG',
     schedule_interval=timedelta(days=1),
