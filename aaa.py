@@ -55,11 +55,3 @@ task3 = PythonOperator(
 # Set task dependencies to define the execution order
 task1 >> task2 >> task3
 
-task3 = PythonOperator(
-    task_id='task3',
-    python_callable=task3,
-    dag=dag,
-)
-
-# Set task dependencies to define the execution order
-task1 >> task2 >> task3
